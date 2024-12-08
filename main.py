@@ -1,10 +1,13 @@
 import requests
 from pprint import pprint
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
+api_keys = os.getenv("API_KEY")
 response = requests.get(
     url="http://dataservice.accuweather.com/locations/v1/cities/geoposition/search",
     params={
-        'apikey': "VWOEIIGDxX7dgDf1WvVKzsA5gsAw6qGy",
+        'apikey': api_keys,
         'q': '55.768760,37.588817',
         'language': 'ru-ru'
 
@@ -12,3 +15,4 @@ response = requests.get(
 
 )
 pprint(response.json())
+
