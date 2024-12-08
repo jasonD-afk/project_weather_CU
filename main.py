@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 api_keys = os.getenv("API_KEY")
-response = requests.get(
+location_api = requests.get(
     url="http://dataservice.accuweather.com/locations/v1/cities/geoposition/search",
     params={
         'apikey': api_keys,
@@ -14,5 +14,5 @@ response = requests.get(
     }
 
 )
-pprint(response.json())
+pprint(location_api.json())
 
