@@ -12,7 +12,7 @@ location_api = requests.get(
         'language': 'ru-ru'
 
     }
- i
+ 
 )
 location_key = location_api.json()["Key"]
 
