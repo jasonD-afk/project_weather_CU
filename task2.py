@@ -67,7 +67,22 @@ def check_bad_weather():
         print("Сегодня нельзя идти на прогулку, на улице очень опасно")
     
 
-    
-check_bad_weather()
+ 
+def FoundCity(nameCity):
+    for_found_city = requests.get(
+        url = "http://dataservice.accuweather.com/locations/v1/cities/search",
+        params={
+            'apikey': api_keys,
+            'q': nameCity,
+            'language': "ru-ru",
+            'details': 'true'
+        }
+    )
+    latitude = for_found_city.json()[0]['GeoPosition']['Latitude']
+    longitude = for_found_city.json()[0]['GeoPosition']['longitude']
+    return [latitude, longitude]
 
+# City = FoundCity('Москва')
+# pprint(City.json())
+print(FoundCity('Москва'))
 # 55.768045, 37.585129
