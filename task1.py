@@ -32,6 +32,21 @@ def printWeather(loc_key):
     )
     return hour1_forecast_api
 
+def check_bad_weather(loc_key):
+    weather_info = printWeather(loc_key).json()[0]
+    temperature = weather_info['Temperature']['Value']
+    wind_speed = weather_info['Wind']['Speed']['Value']
+    PrecipitationProbability = weather_info["PrecipitationProbability"]
+    HasPrecipitation = weather_info["HasPrecipitation"]
+    humidity = weather_info["RelativeHumidity"]
+    if (temperature <= 57 and temperature >= -90) and wind_speed < 70 and (PrecipitationProbability < 80) and humidity > 10 and humidity < 90:
+        if temperature > 3 and temperature < 25 and wind_speed < 20 and PrecipitationProbability < 35 and humidity > 20 and humidity < 85 and HasPrecipitation == False:
+            return("Погода приятная, можно гулять")
+        else:
+            return ("Лучше прогулку отложить")
+    else:
+        return("Сегодня нельзя идти на прогулку, на улице очень опасно")
+
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
@@ -65,6 +80,30 @@ def get_weather():
         return render_template('weather.html', error="Invalid coordinates format")
     except Exception as e:
         return render_template('weather.html', error=str(e))
+    
+@app.route('/advice', methods=['GET', "POST"])
+def advice_point():
+    if request.method == 'GET':
+        return render_template('advice.html')
+    try:
+        latitude = request.form.get('latitude', type=float)
+        longitude = request.form.get('longitude', type=float)
+
+        if latitude is None or longitude is None:
+            return render_template('advice.html', error="Invalid input")
+
+        loc_key = Location_key(latitude, longitude)
+
+        check_weather = check_bad_weather(loc_key)
+        
+        return render_template('result_bad_weather.html', check_weather=check_weather)    
+    except ValueError:
+        return render_template('advice.html', error="Invalid coordinates format")
+    except Exception as e:
+        return render_template('advice.html', error=str(e))
+
+   
+
 
 if __name__ == "__main__":
     app.run(debug=True)
