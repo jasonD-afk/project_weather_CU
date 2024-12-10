@@ -1,1 +1,0 @@
-key_wether = 'VWOEIIGDxX7dgDf1WvVKzsA5gsAw6qGy'

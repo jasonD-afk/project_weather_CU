@@ -1,6 +1,7 @@
 # Импортируй Flask
 from flask import Flask
 
+
 # Создай приложение
 app = Flask(__name__)
 

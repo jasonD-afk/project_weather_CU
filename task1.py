@@ -1,37 +1,70 @@
+from flask import Flask, jsonify, request, render_template
 import requests
-from pprint import pprint
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 api_keys = os.getenv("API_KEY")
-location_api = requests.get(
-    url="http://dataservice.accuweather.com/locations/v1/cities/geoposition/search",
-    params={
-        'apikey': api_keys,
-        'q': '55.768760,37.588817',
-        'language': 'ru-ru'
 
-    }
- 
-)
-location_key = location_api.json()["Key"]
+app = Flask(__name__)
 
-hour1_forecast_api = requests.get(
-    url=f"http://dataservice.accuweather.com/forecasts/v1/hourly/1hour/{location_key}",
-    params={
-        'apikey': api_keys,
-        "language": 'ru-ru',
-        'metric': 'true',
-        'details': 'true'
-    }
-)
-temperature = hour1_forecast_api.json()[0]['Temperature']['Value']
+def Location_key(latitude, longitude):
+    location_api = requests.get(
+        url="http://dataservice.accuweather.com/locations/v1/cities/geoposition/search",
+        params={
+            'apikey': api_keys,
+            'q': f'{latitude},{longitude}',
+            'language': 'ru-ru'
+        }
+    )
+    location_key = location_api.json()["Key"]
+    return location_key
 
+def printWeather(loc_key):
+    hour1_forecast_api = requests.get(
+        url=f"http://dataservice.accuweather.com/forecasts/v1/hourly/1hour/{loc_key}",
+        params={
+            'apikey': api_keys,
+            "language": 'ru-ru',
+            'metric': 'true',
+            'details': 'true'
+        }
+    )
+    return hour1_forecast_api
 
-humidity = hour1_forecast_api.json()[0]["RelativeHumidity"]
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
-wind_spead = hour1_forecast_api.json()[0]['Wind']['Speed']['Value']
-rain_probailiti = hour1_forecast_api.json()[0]["RainProbability"]
-print(f'температура: {temperature} {hour1_forecast_api.json()[0]['Temperature']['Unit']}\nвлажность: {humidity} %\nскорость ветра: {wind_spead} {hour1_forecast_api.json()[0]['Wind']['Speed']['Unit']},\nвероятность дождя: {rain_probailiti} %')
-# pprint(hour1_forecast_api.json())
+@app.route('/weather', methods=['GET', 'POST'])
+def get_weather():
+    if request.method == 'GET':
+        return render_template('weather.html')
+    
+    try:
+        latitude = request.form.get('latitude', type=float)
+        longitude = request.form.get('longitude', type=float)
 
+        if latitude is None or longitude is None:
+            return render_template('weather.html', error="Invalid input")
+
+        loc_key = Location_key(latitude, longitude)
+
+        weather_data = printWeather(loc_key).json()[0]
+
+        response = {
+            "temperature": f"{weather_data['Temperature']['Value']} {weather_data['Temperature']['Unit']}",
+            "humidity": f"{weather_data['RelativeHumidity']} %",
+            "wind_speed": f"{weather_data['Wind']['Speed']['Value']} {weather_data['Wind']['Speed']['Unit']}",
+            "rain_probability": f"{weather_data['RainProbability']} %"
+        }
+
+        return render_template('result.html', **response)
+
+    except ValueError:
+        return render_template('weather.html', error="Invalid coordinates format")
+    except Exception as e:
+        return render_template('weather.html', error=str(e))
+
+if __name__ == "__main__":
+    app.run(debug=True)
