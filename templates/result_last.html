@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Погодные условия по маршруту</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa; 
+        }
+        .city-card {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .city-name {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .city-info {
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4 mb-4 text-center">Погодные условия по маршруту</h1>
+        <div class="row">
+            {% for data in cities_data %}
+            <div class="col-md-6">
+                <div class="city-card">
+                    <div class="city-name">{{ data.city }}, {{ data.country }}</div>
+                    <hr>
+                    <div class="city-info">
+                        <p><strong>Температура:</strong> {{ data.temperature }}</p>
+                        <p><strong>Влажность:</strong> {{ data.humidity }}</p>
+                        <p><strong>Скорость ветра:</strong> {{ data.wind_speed }}</p>
+                        <p><strong>Вероятность дождя:</strong> {{ data.rain_probability }}</p>
+                        <p><strong>Совет:</strong> {{ data.advice }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <a href="/from_city_to_city" class="btn btn-primary">Проверить другой маршрут</a>
+            <a href="/" class="btn btn-secondary">На главную</a>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

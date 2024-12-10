@@ -4,20 +4,23 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 api_keys = os.getenv("API_KEY")
-
+print(api_keys)
 
 def Location_key(latitude, longtude):
     location_api = requests.get(
         url="http://dataservice.accuweather.com/locations/v1/cities/geoposition/search",
         params={
-            'apikey': api_keys,
+            'apikey': 'UhJ02u2sZ83RGardKiVNu3caXRZdNM6v',
             'q': f'{latitude},{longtude}',
             'language': 'ru-ru'
         }
     
     )
-    location_key = location_api.json()["Key"]
-    return location_key
+    
+    return location_api
+
+a = Location_key(55.768045, 37.585129)
+pprint(a.json())
 
 
 def printWeather(loc_key):
@@ -78,11 +81,23 @@ def FoundCity(nameCity):
             'details': 'true'
         }
     )
-    latitude = for_found_city.json()[0]['GeoPosition']['Latitude']
-    longitude = for_found_city.json()[0]['GeoPosition']['longitude']
-    return [latitude, longitude]
+    Latitude = for_found_city.json()[0]['GeoPosition']['Latitude']
+    Longitude = for_found_city.json()[0]['GeoPosition']['Longitude']
+    City_name = for_found_city.json()[0]['LocalizedName']
+    County = for_found_city.json()[0]['Country']['LocalizedName']
 
-# City = FoundCity('Москва')
-# pprint(City.json())
-print(FoundCity('Москва'))
+    Citi_information = {'lat': Latitude, 'lon': Longitude, 'country': County, 'city': City_name}
+    return Citi_information
+    
+
 # 55.768045, 37.585129
+# 'Country': {'EnglishName': 'Russia', 'ID': 'RU', 'LocalizedName': 'Россия'}
+#    'Latitude': 55.752,
+#    'Longitude': 37.619}
+# [{'AdministrativeArea': {'CountryID': 'RU',
+#                          'EnglishName': 'Moscow',
+#                          'EnglishType': 'Federal City',
+#                          'ID': 'MOW',
+#                          'Level': 1,
+#                          'LocalizedName': 'Москва',
+#                          'LocalizedType': 'Город федерального подчинения'},

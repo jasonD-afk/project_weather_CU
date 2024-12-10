@@ -13,3 +13,5 @@ def hello_world():
 # Запусти приложение в режиме отладки
 if __name__ == '__main__':
     app.run(debug=True)
+
+
