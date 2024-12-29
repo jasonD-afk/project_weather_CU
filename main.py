@@ -13,13 +13,11 @@ import dash_leaflet as dl
 import openrouteservice
 
 load_dotenv()
-api_keys = os.getenv("API_KEY")  # AccuWeather API Key
+api_keys = os.getenv("API_KEY")  
 ors_api_key = "5b3ce3597851110001cf624873e06e7cf4c74f5a934bad1b5b9c73e2"  # OpenRouteService API Key
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Замените на ваш секретный ключ
-
-# Инициализируем Dash внутри Flask
+app.secret_key = 'your_secret_key'  
 dash_app = dash.Dash(
     __name__,
     server=app,
@@ -92,7 +90,7 @@ def get_daily_forecast_data(loc_key, days):
         elif days in [3, 5]:
             url = f"http://dataservice.accuweather.com/forecasts/v1/daily/5day/{loc_key}"
         else:
-            return None  # Неподдерживаемый интервал
+            return None 
 
         forecast_api = requests.get(
             url=url,
@@ -100,7 +98,7 @@ def get_daily_forecast_data(loc_key, days):
                 'apikey': api_keys,
                 'language': 'ru-ru',
                 'metric': 'true',
-                'details': 'true'  # Добавляем детали
+                'details': 'true'
             }
         )
         forecast_api.raise_for_status()
@@ -161,7 +159,7 @@ def get_route(coords):
         routes = client.directions(coords, profile='driving-car')
         geometry = routes['routes'][0]['geometry']
         decoded = openrouteservice.convert.decode_polyline(geometry)
-        route = [(coord[1], coord[0]) for coord in decoded['coordinates']]  # Меняем порядок на (lat, lng)
+        route = [(coord[1], coord[0]) for coord in decoded['coordinates']] 
         return route
     except openrouteservice.exceptions.ApiError as api_err:
         print(f"API Error: {api_err}")
@@ -172,9 +170,6 @@ def get_route(coords):
         import traceback
         traceback.print_exc()
         return None
-
-
-# Маршруты Flask
 
 @app.route('/', methods=['GET'])
 def index():
@@ -284,7 +279,6 @@ def search_city():
             }
             cities_data.append(data)
 
-        # Сохраняем данные в сессии для использования в Dash
         session['city_data_list'] = cities_data
 
         return render_template('result_last.html', cities_data=cities_data)
@@ -294,13 +288,11 @@ def search_city():
     except Exception as e:
         print(f"Ошибка: {e}")
         return render_template('from_city_to_city.html', error=f"Произошла ошибка: {str(e)}")
-    
 
-# Новый маршрут для визуализации погоды
 @app.route('/visualization', methods=['GET', 'POST'])
 def visualization():
     if request.method == 'POST':
-        # Получить данные из формы
+
         city_names = []
         num_locations = int(request.form.get('num_locations', 1))
         for i in range(1, num_locations + 1):
@@ -309,10 +301,8 @@ def visualization():
                 return render_template('visualization_form.html', error="Введите название города.")
             city_names.append(city_name)
 
-        # Получить количество дней
         days = int(request.form.get('days', 1))
 
-        # Получить информацию о каждом городе
         city_data_list = []
         for city_name in city_names:
             city_info = FoundCity(city_name)
@@ -321,13 +311,11 @@ def visualization():
             else:
                 return render_template('visualization_form.html', error=f"Город '{city_name}' не найден.")
 
-        # Сохранить данные в сессии
         session['city_data_list'] = city_data_list
-        # Перенаправить на страницу Dash с параметром days
+
         return redirect(f'/dash/?days={days}')
     return render_template('visualization_form.html')
 
-# Макет Dash-приложения
 
 dash_app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -368,7 +356,7 @@ dash_app.layout = html.Div([
                 {'label': '3 дня', 'value': 3},
                 {'label': '5 дней', 'value': 5}
             ],
-            value=1,  # Устанавливаем значение по умолчанию
+            value=1, 
             labelStyle={'display': 'inline-block', 'margin-right': '10px'}
         )
     ]),
@@ -378,7 +366,6 @@ dash_app.layout = html.Div([
     html.Div(id='hidden-div', style={'display': 'none'})
 ])
 
-# Колбэк для обновления значения days-radio на основе параметра URL
 
 from urllib.parse import parse_qs
 
@@ -398,18 +385,17 @@ def update_days_radio(search):
     else:
         return 1
 
-# Колбэк для передачи данных из сессии в Dash
+
 @dash_app.callback(
     Output('city-data-store', 'data'),
     Input('hidden-div', 'children')
 )
 def update_store(_):
-    # Получаем данные из сессии Flask
+
     from flask import session
     city_data_list = session.get('city_data_list', [])
     return city_data_list
 
-# Колбэк для обновления графика
 @dash_app.callback(
     Output('weather-graph', 'figure'),
     [Input('parameter-dropdown', 'value'),
@@ -449,7 +435,7 @@ def update_graph(selected_parameter, chart_type, city_data_list, days):
                     wind_speed = item['Day']['Wind']['Speed']['Value']
                     values.append(wind_speed)
                 except KeyError:
-                    # Если данные отсутствуют, используем значение по умолчанию или пропускаем
+             
                     values.append(None)
             unit = forecast_data[0]['Day']['Wind']['Speed'].get('Unit', '')
             yaxis_title = f'Скорость ветра ({unit})'
@@ -499,7 +485,6 @@ def update_graph(selected_parameter, chart_type, city_data_list, days):
 
     return figure
 
-# Колбэк для обновления карты
 @dash_app.callback(
     Output('map-container', 'children'),
     Input('city-data-store', 'data')
@@ -508,16 +493,15 @@ def update_map(city_data_list):
     if not city_data_list or len(city_data_list) < 2:
         return html.P("Для отображения маршрута на карте необходимо указать как минимум два города.")
 
-    # Получение координат городов
+
     coords = []
     markers = []
     for city_data in city_data_list:
         city_name = city_data['city']
         latitude = city_data['lat']
         longitude = city_data['lon']
-        coords.append((longitude, latitude))  # Для OpenRouteService порядок (lng, lat)
+        coords.append((longitude, latitude)) 
 
-        # Получаем прогноз погоды для города
         loc_key = Location_key(latitude, longitude)
         forecast_data = get_daily_forecast_data(loc_key, 1)
         if forecast_data:
@@ -530,7 +514,6 @@ def update_map(city_data_list):
             unit = ''
             weather_text = 'Нет данных'
 
-        # Создаем маркер с информацией о погоде
         marker = dl.Marker(
             position=(latitude, longitude),
             children=[
@@ -544,18 +527,14 @@ def update_map(city_data_list):
         )
         markers.append(marker)
 
-    # Получение маршрута
     route = get_route(coords)
     if not route:
         return html.P("Не удалось построить маршрут между указанными городами.")
 
-    # Создаем полилинию для маршрута
     line = dl.Polyline(positions=route, color='blue')
 
-    # Центрируем карту на первой точке
     center = [city_data_list[0]['lat'], city_data_list[0]['lon']]
 
-    # Создаем объект карты
     map_ = dl.Map(center=center, zoom=5, children=[
         dl.TileLayer(),
         dl.LayerGroup(markers),
