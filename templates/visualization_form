@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Визуализация погоды</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+ 
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .city-group {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .remove-button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4 mb-4 text-center">Визуализация погоды</h1>
+        {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+        <form method="post" id="city-form">
+            <input type="hidden" name="num_locations" id="num_locations" value="1">
+            <div id="cities-container">
+                <div class="city-group" id="city-group-1">
+                    <button type="button" class="btn btn-danger btn-sm remove-button" onclick="removeCity(1)">×</button>
+                    <div class="form-group">
+                        <label for="city_1">Название города:</label>
+                        <input type="text" name="city_1" id="city_1" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" onclick="addCity()">Добавить город</button>
+            <!-- Добавляем выбор временного интервала -->
+            <div class="form-group">
+                <label for="days">Выберите временной интервал (в днях):</label>
+                <select name="days" id="days" class="form-control" required>
+                    <option value="1">1 день</option>
+                    <option value="3">3 дня</option>
+                    <option value="5">5 дней</option>
+                </select>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary">Показать визуализацию</button>
+            <a href="/" class="btn btn-secondary">На главную</a>
+        </form>
+    </div>
+
+    <script>
+        let cityCount = 1;
+
+        function addCity() {
+            cityCount++;
+            const container = document.getElementById('cities-container');
+            const newGroup = document.createElement('div');
+            newGroup.className = 'city-group';
+            newGroup.id = `city-group-${cityCount}`;
+            newGroup.innerHTML = `
+                <button type="button" class="btn btn-danger btn-sm remove-button" onclick="removeCity(${cityCount})">×</button>
+                <div class="form-group">
+                    <label for="city_${cityCount}">Название города:</label>
+                    <input type="text" name="city_${cityCount}" id="city_${cityCount}" class="form-control" required>
+                </div>
+            `;
+            container.appendChild(newGroup);
+            document.getElementById('num_locations').value = cityCount;
+        }
+
+        function removeCity(id) {
+            const group = document.getElementById(`city-group-${id}`);
+            if (group) {
+                group.remove();
+                cityCount--;
+                document.getElementById('num_locations').value = cityCount;
+            }
+        }
+    </script>
+</body>
+</html>
